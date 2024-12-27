@@ -10,25 +10,36 @@ public class PlayerControls : MonoBehaviour
 {
     private ARRaycastManager arRaycastManager;
     private List<ARRaycastHit> hits = new List<ARRaycastHit>();
+     private Vector2 firstPressPos;
+    private Vector2 secondPressPos;
+
+    
+    public AudioSource interactionAudio;
+    public AudioClip correct, incorrect;
+    public Animator screenFlash;
+  
     public RobotSpawner botSpawn;
     public Transform launcher;
     public Button checkButton; 
     public GameObject rightTxt, leftTxt;
     public TextMeshProUGUI cash;
-    private int score = 0;     
+    public int score = 0;     
+    
 
     void Start()
     {
-        arRaycastManager = FindObjectOfType<ARRaycastManager>();
-        if (checkButton != null)
+       arRaycastManager = FindObjectOfType<ARRaycastManager>();
+        /*if (checkButton != null)
         {
             checkButton.onClick.AddListener(CheckForBot);
-        }
+        }*/
     }
 
     void Update()
     {
-        launcher = botSpawn.launchSpot;
+       
+        if(botSpawn.instBots.Count > 0){
+        launcher = botSpawn.instBots[0].transform;
         float angleDifference = GetSignedAngleToTarget();
         if (angleDifference > 10)
         {
@@ -49,31 +60,148 @@ public class PlayerControls : MonoBehaviour
 	    leftTxt.SetActive(false);
 
         }
+        }
 	cash.text = "Money Made: $" + score;
     }
 
-    public void CheckForBot()
+
+    public void CheckForGreenBot()
     {
         Vector2 screenPosition = new Vector2(Screen.width / 2, Screen.height / 2);
         if (arRaycastManager != null && arRaycastManager.Raycast(screenPosition, hits, TrackableType.FeaturePoint | TrackableType.PlaneWithinPolygon))
         {
             Pose hitPose = hits[0].pose;
-            Debug.Log("AR hit detected at position: " + hitPose.position);
+            //Debug.Log("AR hit detected at position: " + hitPose.position);
         }
 
         Ray ray = Camera.main.ScreenPointToRay(screenPosition);
         RaycastHit hit;
-        if (Physics.Raycast(ray, out hit, 100))
+        if (Physics.Raycast(ray, out hit, 500))
         {
-            if (hit.transform.CompareTag("bot"))
+            if (hit.transform.CompareTag("greenBot"))
             {
+                hit.transform.gameObject.GetComponent<RobotController>().helped = true;
+                screenFlash.SetTrigger("correct");
+                botSpawn.instBots.RemoveAt(0);
                 //Debug.Log(hit.transform.name + " : " + hit.transform.tag);
+            CorrectHit();
                 score += 20;
+                //Destroy(hit.transform.gameObject);
+                
                 //Debug.Log("Score: " + score);
-		Destroy(hit.transform.gameObject);
+		
+            }
+            else if (hit.transform.CompareTag("redBot") || hit.transform.CompareTag("blueBot"))
+            {
+                hit.transform.gameObject.GetComponent<RobotController>().speed += 1f;
+                Debug.Log(hit.transform.gameObject.GetComponent<RobotController>().failSpeed);
+                screenFlash.SetTrigger("incorrect");
+                //hit.transform.gameObject.GetComponent<RobotController>().helped = true;
+                //Debug.Log(hit.transform.name + " : " + hit.transform.tag);
+                IncorrectHit();
+                score -= 20;
+                //Destroy(hit.transform.gameObject);
+                
+                //Debug.Log("Score: " + score);
+		
             }
         }
     }
+     public void CheckForRedBot()
+    {
+        Vector2 screenPosition = new Vector2(Screen.width / 2, Screen.height / 2);
+        if (arRaycastManager != null && arRaycastManager.Raycast(screenPosition, hits, TrackableType.FeaturePoint | TrackableType.PlaneWithinPolygon))
+        {
+            Pose hitPose = hits[0].pose;
+            ////Debug.Log("AR hit detected at position: " + hitPose.position);
+        }
+
+        Ray ray = Camera.main.ScreenPointToRay(screenPosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, 500))
+        {
+            if (hit.transform.CompareTag("redBot"))
+            {
+                hit.transform.gameObject.GetComponent<RobotController>().helped = true;
+                screenFlash.SetTrigger("correct");
+                botSpawn.instBots.RemoveAt(0);
+                ////Debug.Log(hit.transform.name + " : " + hit.transform.tag);
+               
+                score += 20;
+                CorrectHit();
+                //Destroy(hit.transform.gameObject);
+                
+                ////Debug.Log("Score: " + score);
+		
+            }
+            else if (hit.transform.CompareTag("greenBot") || hit.transform.CompareTag("blueBot"))
+            {
+                hit.transform.gameObject.GetComponent<RobotController>().speed += 1f;
+                Debug.Log(hit.transform.gameObject.GetComponent<RobotController>().failSpeed);
+                screenFlash.SetTrigger("incorrect");
+                //hit.transform.gameObject.GetComponent<RobotController>().helped = true;
+                ////Debug.Log(hit.transform.name + " : " + hit.transform.tag);
+               
+                score -= 20;
+                IncorrectHit();
+                //Destroy(hit.transform.gameObject);
+                
+                ////Debug.Log("Score: " + score);
+		
+            }
+        }
+    }
+     public void CheckForBlueBot()
+    {
+        Vector2 screenPosition = new Vector2(Screen.width / 2, Screen.height / 2);
+        if (arRaycastManager != null && arRaycastManager.Raycast(screenPosition, hits, TrackableType.FeaturePoint | TrackableType.PlaneWithinPolygon))
+        {
+            Pose hitPose = hits[0].pose;
+            //Debug.Log("AR hit detected at position: " + hitPose.position);
+        }
+
+        Ray ray = Camera.main.ScreenPointToRay(screenPosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit, 500))
+        {
+            if (hit.transform.CompareTag("blueBot"))
+            {
+                hit.transform.gameObject.GetComponent<RobotController>().helped = true;
+                screenFlash.SetTrigger("correct");
+                botSpawn.instBots.RemoveAt(0);
+                ////Debug.Log(hit.transform.name + " : " + hit.transform.tag);
+               
+                score += 20;
+                CorrectHit();
+                //Destroy(hit.transform.gameObject);
+                
+                ////Debug.Log("Score: " + score);
+		
+            }
+            else if (hit.transform.CompareTag("redBot") || hit.transform.CompareTag("greenBot"))
+            {
+                hit.transform.gameObject.GetComponent<RobotController>().speed += 1f;
+                Debug.Log(hit.transform.gameObject.GetComponent<RobotController>().failSpeed);
+                screenFlash.SetTrigger("incorrect");
+                ////Debug.Log(hit.transform.name + " : " + hit.transform.tag);
+               
+                score -= 20;
+                IncorrectHit();
+                //Destroy(hit.transform.gameObject);
+                
+                ////Debug.Log("Score: " + score);
+		
+            }
+        }
+    }
+public void CorrectHit(){
+    interactionAudio.clip = correct;
+    interactionAudio.Play();
+}
+public void IncorrectHit(){
+    interactionAudio.clip = incorrect;
+    interactionAudio.Play();
+}
 
     private float GetSignedAngleToTarget()
     {

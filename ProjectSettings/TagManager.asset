@@ -6,6 +6,10 @@ TagManager:
   tags:
   - center
   - bot
+  - bounds
+  - greenBot
+  - redBot
+  - blueBot
   layers:
   - Default
   - TransparentFX

@@ -1,0 +1,12 @@
+- You're currently working your 1st shift at Bots n' Beyond, the newest store for robots & androids alike.
+- Manage customers as they come at you from all angles
+- If they greet you before you greet them, GAME OVER
+
+The bots' eyes tell what kind of service they need:
+- Green eyes mean they're ready to check out
+
+- Blue eyes signify a need for a product return
+
+- Red/brown means BUSINESS, they want to speak with a manager or customer service
+
+Look for hints telling you which wat to turn to find the customers!
